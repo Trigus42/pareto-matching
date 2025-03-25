@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pareto-matching"
+version = "0.1.0"
+authors = [
+    {name = "Trigus42"},
+]
+description = "Partner pairing with Pareto efficiency for the stable roommates problem"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "numpy>=1.26.0",
+    "oapackage>=2.6.2",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Trigus42/pareto-matching"
+"Bug Tracker" = "https://github.com/Trigus42/pareto-matching/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pareto_matching"]
