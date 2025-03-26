@@ -3,6 +3,7 @@ import numpy as np
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 
 Person: TypeAlias = str
 PreferenceList: TypeAlias = List[Person]
@@ -85,7 +86,7 @@ def find_pareto_efficient_matching(
     for i, matching in enumerate(population):
         utility_vectors[i] = _calculate_utilities(matching, preference_matrix)
     
-    # Find Pareto-efficient matchings using our own implementation
+    # Find Pareto-efficient matchings using pymoo library
     pareto_indices = _find_pareto_efficient_indices(utility_vectors)
     
     # Choose the best Pareto-efficient matching (maximize minimum utility)
@@ -246,7 +247,8 @@ def verify_pareto_efficiency(
 
 def _find_pareto_efficient_indices(vectors: np.ndarray) -> List[int]:
     """
-    Find the indices of Pareto-efficient points in a set of utility vectors.
+    Find the indices of Pareto-efficient points in a set of utility vectors
+    using the pymoo library's non-dominated sorting.
     
     A point is Pareto-efficient if no other point dominates it
     (i.e., is at least as good in all dimensions and strictly better in at least one).
@@ -257,23 +259,11 @@ def _find_pareto_efficient_indices(vectors: np.ndarray) -> List[int]:
     Returns:
         List of indices of Pareto-efficient points
     """
-    n_points = vectors.shape[0]
-    is_efficient = np.ones(n_points, dtype=bool)
-    
-    for i in range(n_points):
-        if is_efficient[i]:
-            # Find points that dominate this point
-            dominated_mask = np.all(vectors >= vectors[i, :], axis=1) & np.any(vectors > vectors[i, :], axis=1)
-            
-            # If any such points exist, this point is not Pareto-efficient
-            if np.any(dominated_mask):
-                is_efficient[i] = False
-            else:
-                # Find points dominated by this point (efficient point)
-                dominated_by_i = np.all(vectors[i, :] >= vectors, axis=1) & np.any(vectors[i, :] > vectors, axis=1)
-                is_efficient[dominated_by_i] = False
-    
-    return list(np.where(is_efficient)[0])
+    # In pymoo, the first front (rank=0) contains the non-dominated (Pareto-efficient) solutions
+    # We need to negate the vectors because pymoo minimizes by default and we want to maximize
+    nds = NonDominatedSorting()
+    fronts = nds.do(-vectors)
+    return list(fronts[0])
 
 def _generate_random_matching(n: int) -> List[int]:
     """Generate a random valid matching where each person is paired with exactly one other person."""
